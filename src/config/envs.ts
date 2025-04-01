@@ -19,7 +19,7 @@ const { error, value } = result as {
 };
 
 if (error) {
-  throw new Error(`Config validation error: \${error.message}`);
+  throw new Error(`Config validation error: ${error.message}`);
 }
 export const envVars: EnvVars = value;
 export const envs = {
