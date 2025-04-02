@@ -23,7 +23,7 @@ model Orders {
   id          String      @id @default(uuid())
   totalAmount Float
   totalItem   Int
-  orderStatus OrderStatus
+  status      OrderStatus
   paid        Boolean     @default(false)
   paidAt      DateTime?
 
