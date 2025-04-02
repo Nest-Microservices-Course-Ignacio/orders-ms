@@ -31,7 +31,6 @@ export class OrdersController {
 
   @MessagePattern({ cmd: 'change_order_status' })
   changeOrderStatus(@Payload() updateOrderDto: UpdateOrderDto) {
-    console.log({ updateOrderDto });
     return this.ordersService.changeOrderStatus(updateOrderDto);
   }
 }

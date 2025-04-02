@@ -86,9 +86,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   }
 
   async changeOrderStatus(updateOrderDto: UpdateOrderDto) {
-    const order = await this.orders.findUnique({
-      where: { id: updateOrderDto.id },
-    });
+    const order = await this.findOne(updateOrderDto.id);
 
     if (!order) {
       throw new RpcException({
