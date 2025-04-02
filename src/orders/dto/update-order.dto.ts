@@ -1,10 +1,10 @@
-import { IsEnum, IsString } from 'class-validator';
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { OrderStatus } from '../enum/orderStatus.enum';
 
 export class UpdateOrderDto {
   @IsString()
   @IsNotEmpty()
+  @IsUUID()
   id: string;
 
   @IsEnum(OrderStatus, {
