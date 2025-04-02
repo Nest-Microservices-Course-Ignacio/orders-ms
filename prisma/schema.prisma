@@ -20,7 +20,8 @@ enum OrderStatus {
 }
 
 model Orders {
-  id          String      @id @default(uuid())
+  id String @id @default(uuid())
+
   totalAmount Float
   totalItem   Int
   status      OrderStatus

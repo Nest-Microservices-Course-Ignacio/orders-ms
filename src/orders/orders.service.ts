@@ -1,7 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
@@ -11,17 +11,31 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     this.$connect();
   }
 
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  async create(createOrderDto: CreateOrderDto) {
+    Logger.log('Creating order...', this.constructor.name);
+    return await this.orders.create({
+      data: createOrderDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll() {
+    return await this.orders.findMany({});
   }
 
-  findOne(id: number) {
-    console.log(id);
-    return `This action returns a #${id} order`;
+  async findOne(id: string) {
+    Logger.log(`Finding order with id ${id}...`, this.constructor.name);
+    const order = await this.orders.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      Logger.error(`Order with id ${id} not found`, this.constructor.name);
+      throw new RpcException({
+        message: `Order with id ${id} not found`,
+        status: HttpStatus.NOT_FOUND,
+      });
+    }
+    return order;
   }
 
   changeOrderStatus(id: number) {

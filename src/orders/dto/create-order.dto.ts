@@ -1,11 +1,11 @@
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
-  IsDate,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsPositive,
+    IsBoolean,
+    IsDate,
+    IsEnum,
+    IsNumber,
+    IsOptional,
+    IsPositive,
 } from 'class-validator';
 import { OrderStatus } from '../enum/orderStatus.enum';
 
@@ -32,6 +32,7 @@ export class CreateOrderDto {
   paid?: boolean;
 
   @IsDate()
+  @IsOptional()
   @Type(() => Date)
   paidAt?: Date;
 }
