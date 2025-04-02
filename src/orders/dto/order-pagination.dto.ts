@@ -8,10 +8,10 @@ export class OrderPaginationDto extends PaginationDto {
     message: `status must be one of the following values: ${Object.values(OrderStatus).join(', ')}`,
   })
   @IsOptional()
-  status?: OrderStatus;
+  status?: OrderStatus = OrderStatus.PENDING;
 
   @IsBoolean()
   @Type(() => Boolean)
   @IsOptional()
   paid?: boolean;
-} 
+}

@@ -21,9 +21,8 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
   async findAll(orderPagination: OrderPaginationDto) {
     const { page = 1, limit = 10 } = orderPagination;
-    // Convert to number and ensure valid values
+
     const skip = (page - 1) * limit;
-    // Get total count for pagination metadata
     const totalCount = await this.orders.count();
     const orders = await this.orders.findMany({
       skip,
@@ -33,6 +32,29 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
         status: orderPagination.status,
         paid: orderPagination.paid,
       },
+    });
+
+    return {
+      data: orders,
+      meta: {
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  }
+
+  async findAllByStatus(orderPagination: OrderPaginationDto) {
+    const { page = 1, limit = 10 } = orderPagination;
+
+    const skip = (page - 1) * limit;
+    const totalCount = await this.orders.count();
+    const orders = await this.orders.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      where: { status: orderPagination.status },
     });
 
     return {

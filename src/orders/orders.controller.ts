@@ -18,6 +18,11 @@ export class OrdersController {
     return this.ordersService.findAll(orderPagination);
   }
 
+  @MessagePattern({ cmd: 'find_by_status' })
+  findAllByStatus(@Payload() orderPagination: OrderPaginationDto) {
+    return this.ordersService.findAllByStatus(orderPagination);
+  }
+
   @MessagePattern({ cmd: 'find_one_order' })
   findOne(@Payload() id: string) {
     return this.ordersService.findOne(id);
