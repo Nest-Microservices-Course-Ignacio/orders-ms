@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
 
 import { PrismaClient } from '@prisma/client';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
@@ -84,7 +85,21 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     return order;
   }
 
-  changeOrderStatus(id: number) {
-    return `This action removes a #${id} order`;
+  async changeOrderStatus(updateOrderDto: UpdateOrderDto) {
+    const order = await this.orders.findUnique({
+      where: { id: updateOrderDto.id },
+    });
+
+    if (!order) {
+      throw new RpcException({
+        message: `Order with id ${updateOrderDto.id} not found`,
+        status: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    return this.orders.update({
+      where: { id: updateOrderDto.id },
+      data: { status: updateOrderDto.status },
+    });
   }
 }

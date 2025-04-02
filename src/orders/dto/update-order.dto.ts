@@ -1,6 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateOrderDto } from './create-order.dto';
+import { IsEnum, IsString } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
+import { OrderStatus } from '../enum/orderStatus.enum';
 
-export class UpdateOrderDto extends PartialType(CreateOrderDto) {
-  id: number;
+export class UpdateOrderDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @IsEnum(OrderStatus, {
+    message: `status must be one of the following values: ${Object.values(OrderStatus).join(', ')}`,
+  })
+  status: OrderStatus = OrderStatus.PENDING;
 }
