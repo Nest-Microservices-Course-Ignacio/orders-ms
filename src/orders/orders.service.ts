@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
   onModuleInit() {
-    Logger.log('Prisma Client is connected...', this.constructor.name);
+    Logger.log('Database connected...', this.constructor.name);
     this.$connect();
   }
 
