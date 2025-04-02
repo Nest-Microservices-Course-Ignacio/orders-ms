@@ -23,7 +23,6 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     const { page = 1, limit = 10 } = orderPagination;
     // Convert to number and ensure valid values
     const skip = (page - 1) * limit;
-    console.log({ page, limit });
     // Get total count for pagination metadata
     const totalCount = await this.orders.count();
     const orders = await this.orders.findMany({
