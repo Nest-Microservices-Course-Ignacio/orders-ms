@@ -14,11 +14,7 @@ services:
       - ./postgres:/var/lib/postgresql/data
     networks:
       - orders_network
-    restart: unless-stopped
-
-networks:
-  orders_network:
-    driver: bridge
+    restart: always
 
 volumes:
   postgres_data:
