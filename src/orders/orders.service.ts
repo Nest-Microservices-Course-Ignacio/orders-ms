@@ -9,7 +9,7 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
 
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { ProductsCommands } from 'src/common/cmd/products.cmd';
 import { PRODUCTS_SERVICE } from 'src/config/services';
@@ -36,6 +36,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       const productsExist: {
         id: number;
         price: number;
+        name: string;
       }[] = await firstValueFrom(
         this.productsClient.send(
           { cmd: ProductsCommands.VALIDATE_PRODUCTS },
@@ -50,7 +51,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
       const totalItem = createOrderDto.items.length;
 
-      const orderCreated = await this.orders.create({
+      const orderCreated = (await this.orders.create({
         data: {
           totalAmount,
           totalItem,
@@ -65,9 +66,26 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
             },
           },
         },
-      });
+        include: {
+          OrderItem: {
+            select: {
+              productId: true,
+              price: true,
+              quantity: true,
+            },
+          },
+        },
+      })) as Prisma.OrdersGetPayload<{
+        include: { OrderItem: true };
+      }>;
 
-      return orderCreated;
+      return {
+        ...orderCreated,
+        OrderItem: orderCreated.OrderItem.map((orderItem) => ({
+          ...orderItem,
+          name: productsExist.find((p) => p.id === orderItem.productId)!.name,
+        })),
+      };
     } catch (error) {
       console.error(error);
       throw new RpcException(error);
