@@ -33,16 +33,11 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
     // verify if the products exist
     try {
-      const productsExist: {
-        id: number;
-        price: number;
-        name: string;
-      }[] = await firstValueFrom(
-        this.productsClient.send(
-          { cmd: ProductsCommands.VALIDATE_PRODUCTS },
-          { ids: createOrderDto.items.map((item) => item.productId) },
-        ),
-      );
+      const productsIds = createOrderDto.items.map((item) => item.productId);
+
+      const productsExist = await this.getProductsByIds({
+        productsIds,
+      });
 
       const totalAmount = createOrderDto.items.reduce((sum, orderItem) => {
         const product = productsExist.find((p) => p.id === orderItem.productId);
@@ -164,16 +159,11 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       });
     }
 
-    const productsExist: {
-      id: number;
-      price: number;
-      name: string;
-    }[] = await firstValueFrom(
-      this.productsClient.send(
-        { cmd: ProductsCommands.VALIDATE_PRODUCTS },
-        { ids: order.OrderItem.map((orderItem) => orderItem.productId) },
-      ),
-    );
+    const productsIds = order.OrderItem.map((orderItem) => orderItem.productId);
+
+    const productsExist = await this.getProductsByIds({
+      productsIds,
+    });
 
     const orderWithItems = {
       ...order,
@@ -215,5 +205,20 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     );
 
     return productsExist;
+  }
+
+  async getProductsByIds({ productsIds }: { productsIds: number[] }): Promise<
+    {
+      id: number;
+      price: number;
+      name: string;
+    }[]
+  > {
+    return await firstValueFrom(
+      this.productsClient.send(
+        { cmd: ProductsCommands.VALIDATE_PRODUCTS },
+        { ids: productsIds },
+      ),
+    );
   }
 }
