@@ -207,7 +207,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     return productsExist;
   }
 
-  async getProductsByIds({ productsIds }: { productsIds: number[] }): Promise<
+  private async getProductsByIds({ productsIds }: { productsIds: number[] }): Promise<
     {
       id: number;
       price: number;
