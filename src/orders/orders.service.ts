@@ -9,7 +9,7 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
 
-import { Prisma, PrismaClient } from '@prisma/client';
+import { OrderItems, Prisma, PrismaClient } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { ProductsCommands } from 'src/common/cmd/products.cmd';
 import { PRODUCTS_SERVICE } from 'src/config/services';
@@ -145,6 +145,15 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     Logger.log(`Finding order with id ${id}...`, this.constructor.name);
     const order = await this.orders.findUnique({
       where: { id },
+      include: {
+        OrderItem: {
+          select: {
+            productId: true,
+            price: true,
+            quantity: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -154,7 +163,27 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
         status: HttpStatus.NOT_FOUND,
       });
     }
-    return order;
+
+    const productsExist: {
+      id: number;
+      price: number;
+      name: string;
+    }[] = await firstValueFrom(
+      this.productsClient.send(
+        { cmd: ProductsCommands.VALIDATE_PRODUCTS },
+        { ids: order.OrderItem.map((orderItem) => orderItem.productId) },
+      ),
+    );
+
+    const orderWithItems = {
+      ...order,
+      OrderItem: order.OrderItem.map((orderItem) => ({
+        ...orderItem,
+        name: productsExist.find((p) => p.id === orderItem.productId)!.name,
+      })),
+    };
+
+    return orderWithItems;
   }
 
   async changeOrderStatus(updateOrderDto: UpdateOrderDto) {
@@ -171,5 +200,20 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       where: { id: updateOrderDto.id },
       data: { status: updateOrderDto.status },
     });
+  }
+
+  async getProducts({ orderItems }: { orderItems: OrderItems[] }) {
+    const productsExist: {
+      id: number;
+      price: number;
+      name: string;
+    }[] = await firstValueFrom(
+      this.productsClient.send(
+        { cmd: ProductsCommands.VALIDATE_PRODUCTS },
+        { ids: orderItems.map((orderItem) => orderItem.productId) },
+      ),
+    );
+
+    return productsExist;
   }
 }
