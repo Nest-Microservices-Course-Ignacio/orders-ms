@@ -12,14 +12,12 @@ import { OrderPaginationDto } from './dto/order-pagination.dto';
 import { OrderItems, Prisma, PrismaClient } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { ProductsCommands } from 'src/common/cmd/products.cmd';
-import { PRODUCTS_SERVICE } from 'src/config/services';
+import { NATS_SERVICE } from 'src/config/services';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
-  constructor(
-    @Inject(PRODUCTS_SERVICE) private readonly productsClient: ClientProxy,
-  ) {
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {
     super();
   }
 
@@ -198,7 +196,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       price: number;
       name: string;
     }[] = await firstValueFrom(
-      this.productsClient.send(
+      this.client.send(
         { cmd: ProductsCommands.VALIDATE_PRODUCTS },
         { ids: orderItems.map((orderItem) => orderItem.productId) },
       ),
@@ -219,7 +217,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     }[]
   > {
     return await firstValueFrom(
-      this.productsClient.send(
+      this.client.send(
         { cmd: ProductsCommands.VALIDATE_PRODUCTS },
         { ids: productsIds },
       ),
