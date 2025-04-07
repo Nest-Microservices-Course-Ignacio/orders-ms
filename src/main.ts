@@ -1,17 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { envVars } from './config/envs';
+
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { RpcCustomExceptionFilter } from './common/exceptions/rcp-exception.filter';
+import { envs } from './config/envs';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
-      transport: Transport.TCP,
+      transport: Transport.NATS,
       options: {
-        port: envVars.PORT,
+        servers: envs.natsServers,
       },
     },
   );
@@ -28,9 +29,6 @@ async function bootstrap() {
 
   await app.listen();
 
-  Logger.log(
-    `Microservice is listening on port ${envVars.PORT}`,
-    'Orders Main',
-  );
+  Logger.log(`Microservice is listening on port ${envs.port}`, 'Orders Main');
 }
 bootstrap();

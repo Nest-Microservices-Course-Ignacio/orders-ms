@@ -5,6 +5,7 @@ interface EnvVars {
   PORT: number;
   PRODUCTS_SERVICE_HOST: string;
   PRODUCTS_SERVICE_PORT: number;
+  NATS_SERVERS: string[];
 }
 
 const envVarsSchema = joi
@@ -12,11 +13,15 @@ const envVarsSchema = joi
     PORT: joi.number().required(),
     PRODUCTS_SERVICE_HOST: joi.string().required(),
     PRODUCTS_SERVICE_PORT: joi.number().required(),
+    NATS_SERVERS: joi.array().items(joi.string()).required(),
   })
   .unknown(true)
   .required();
 
-const result = envVarsSchema.validate(process.env);
+const result = envVarsSchema.validate({
+  ...process.env,
+  NATS_SERVERS: process.env.NATS_SERVERS!.split(','),
+});
 const { error, value } = result as {
   error?: joi.ValidationError;
   value: EnvVars;
@@ -30,4 +35,5 @@ export const envs = {
   port: envVars.PORT,
   productsServiceHost: envVars.PRODUCTS_SERVICE_HOST,
   productsServicePort: envVars.PRODUCTS_SERVICE_PORT,
+  natsServers: envVars.NATS_SERVERS,
 };
