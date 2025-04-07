@@ -23,9 +23,9 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     super();
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     Logger.log('Database connected...', this.constructor.name);
-    this.$connect();
+    await this.$connect();
   }
 
   async create(createOrderDto: CreateOrderDto) {
@@ -207,7 +207,11 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     return productsExist;
   }
 
-  private async getProductsByIds({ productsIds }: { productsIds: number[] }): Promise<
+  private async getProductsByIds({
+    productsIds,
+  }: {
+    productsIds: number[];
+  }): Promise<
     {
       id: number;
       price: number;
