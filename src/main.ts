@@ -13,6 +13,7 @@ async function bootstrap() {
       transport: Transport.NATS,
       options: {
         servers: envs.natsServers,
+        reconnect: true,
       },
     },
   );
