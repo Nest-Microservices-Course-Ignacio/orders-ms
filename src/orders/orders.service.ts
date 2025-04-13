@@ -11,9 +11,12 @@ import { OrderPaginationDto } from './dto/order-pagination.dto';
 
 import { OrderItems, Prisma, PrismaClient } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
+import { OrdersCommands } from 'src/common/cmd/orders.cmd';
 import { ProductsCommands } from 'src/common/cmd/products.cmd';
 import { NATS_SERVICE } from 'src/config/services';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderStatus } from './enum/orderStatus.enum';
+import { OrderWithProducts } from './interfaces/orders-with-products.interface';
 
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
@@ -39,7 +42,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
       const totalAmount = createOrderDto.items.reduce((sum, orderItem) => {
         const product = productsExist.find((p) => p.id === orderItem.productId);
-        return sum + product!.price * orderItem.quantity;
+        return sum + product.price * orderItem.quantity;
       }, 0);
 
       const totalItem = createOrderDto.items.length;
@@ -53,7 +56,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
               data: createOrderDto.items.map((orderItem) => ({
                 productId: orderItem.productId,
                 quantity: orderItem.quantity,
-                price: productsExist.find((p) => p.id === orderItem.productId)!
+                price: productsExist.find((p) => p.id === orderItem.productId)
                   .price,
               })),
             },
@@ -74,15 +77,24 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
       return {
         ...orderCreated,
+        status: orderCreated.status as unknown as OrderStatus,
         OrderItem: orderCreated.OrderItem.map((orderItem) => ({
           ...orderItem,
-          name: productsExist.find((p) => p.id === orderItem.productId)!.name,
+          name: productsExist.find((p) => p.id === orderItem.productId).name,
         })),
       };
     } catch (error) {
       console.error(error);
       throw new RpcException(error);
     }
+  }
+
+  async createPaymentSession(order: OrderWithProducts) {
+    const paymentSession = await firstValueFrom(
+      this.client.send({ cmd: OrdersCommands.CREATE_PAYMENT_SESSION }, {}),
+    );
+
+    return paymentSession;
   }
 
   async findAll(orderPagination: OrderPaginationDto) {
@@ -167,7 +179,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       ...order,
       OrderItem: order.OrderItem.map((orderItem) => ({
         ...orderItem,
-        name: productsExist.find((p) => p.id === orderItem.productId)!.name,
+        name: productsExist.find((p) => p.id === orderItem.productId).name,
       })),
     };
 

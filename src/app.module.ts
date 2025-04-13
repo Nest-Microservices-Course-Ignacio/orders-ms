@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
+
 import { OrdersModule } from './orders/orders.module';
-import { NatsClientModule } from './transports/nats-client.module';
+import { NatsClientModule } from './orders/transports/nats-client.module';
 
 @Module({
   imports: [OrdersModule, NatsClientModule],

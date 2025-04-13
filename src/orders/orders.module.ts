@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { NatsClientModule } from 'src/transports/nats-client.module';
+
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
+import { NatsClientModule } from './transports/nats-client.module';
 
 @Module({
   controllers: [OrdersController],
