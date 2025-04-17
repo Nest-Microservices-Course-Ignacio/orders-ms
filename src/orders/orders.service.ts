@@ -90,8 +90,19 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   }
 
   async createPaymentSession(order: OrderWithProducts) {
-    const paymentSession = await firstValueFrom(
-      this.client.send({ cmd: OrdersCommands.CREATE_PAYMENT_SESSION }, {}),
+    const paymentSession = await firstValueFrom<Record<string, any>>(
+      this.client.send(
+        { cmd: OrdersCommands.CREATE_PAYMENT_SESSION },
+        {
+          orderId: order.id,
+          currency: 'usd',
+          items: order.OrderItem.map((orderItem) => ({
+            name: orderItem.name,
+            price: orderItem.price,
+            quantity: orderItem.quantity,
+          })),
+        },
+      ),
     );
 
     return paymentSession;

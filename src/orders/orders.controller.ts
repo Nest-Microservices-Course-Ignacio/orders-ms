@@ -12,7 +12,7 @@ export class OrdersController {
   @MessagePattern({ cmd: 'create_order' })
   async create(@Payload() createOrderDto: CreateOrderDto) {
     const order = await this.ordersService.create(createOrderDto);
-    const paymentSession = this.ordersService.createPaymentSession(order);
+    const paymentSession = await this.ordersService.createPaymentSession(order);
     return { paymentSession, order };
   }
 
