@@ -17,20 +17,23 @@ enum OrderStatus {
   PENDING
   DELIVERED
   CANCELLED
+  PAID
 }
 
 model Orders {
   id String @id @default(uuid())
 
-  totalAmount Float
-  totalItem   Int
-  status      OrderStatus @default(PENDING)
-  paid        Boolean     @default(false)
-  paidAt      DateTime?
+  totalAmount    Float
+  totalItem      Int
+  status         OrderStatus @default(PENDING)
+  paid           Boolean     @default(false)
+  paidAt         DateTime?
+  stripeChargeId String?
 
-  createdAt DateTime      @default(now())
-  updatedAt DateTime    @updatedAt
-  OrderItem OrderItems[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  OrderItem    OrderItems[]
+  OrderReceipt OrderReceipt?
 }
 
 model OrderItems {
@@ -41,5 +44,18 @@ model OrderItems {
 
   orderId String
   order   Orders @relation(fields: [orderId], references: [id], onDelete: Cascade)
-	@@map("OrderItem")
+
+  @@map("OrderItem")
+}
+
+model OrderReceipt {
+  id String @id @default(uuid())
+
+  orderId String @unique
+  order   Orders @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  receipt String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
