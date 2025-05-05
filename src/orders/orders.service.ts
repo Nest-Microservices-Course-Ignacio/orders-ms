@@ -9,14 +9,17 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
 
-import { OrderItems, Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { OrdersCommands } from 'src/common/cmd/orders.cmd';
 import { ProductsCommands } from 'src/common/cmd/products.cmd';
 import { NATS_SERVICE } from 'src/config/services';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderStatus } from './enum/orderStatus.enum';
-import { OrderWithProducts } from './interfaces/orders-with-products.interface';
+import {
+  OrderItems,
+  OrderWithProducts,
+} from './interfaces/orders-with-products.interface';
 import { PaidOrderDto } from './dto/paid-order.dto';
 
 @Injectable()
@@ -48,7 +51,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
       const totalItem = createOrderDto.items.length;
 
-      const orderCreated = (await this.orders.create({
+      const orderCreated = await this.orders.create({
         data: {
           totalAmount,
           totalItem,
@@ -72,9 +75,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
             },
           },
         },
-      })) as Prisma.OrdersGetPayload<{
-        include: { OrderItem: true };
-      }>;
+      });
 
       return {
         ...orderCreated,

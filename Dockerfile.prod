@@ -1,0 +1,44 @@
+# STAGE 1 dependendencias
+FROM node:23-alpine3.20 as deps
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install
+
+# STAGE 2 construir app
+FROM node:23-alpine3.20 as build
+WORKDIR /usr/src/app
+
+# copiar de la imagen deps, los modulos instalados (solo prod) de node
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+
+# copiar todo el codigo fuente
+COPY . .
+
+# correr test
+# RUN npm run test
+# compilar el proyecto
+RUN npm run build
+RUN npm ci --force --only-production && npm cache clean --force
+RUN npx prisma generate
+
+
+# STAGE 3 crear imagen final
+FROM node:23-alpine3.20 as prod
+WORKDIR /usr/src/app
+
+# copiar dependencias
+COPY --from=build /usr/src/app/node_modules ./node_modules
+# copiar el distribuible del proyecto
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/prisma ./prisma
+
+ENV NODE_ENV=production
+
+# recomendacion por seguirdad
+USER node
+
+EXPOSE 3000
+
+CMD [ "node","dist/main.js" ]

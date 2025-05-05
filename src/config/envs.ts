@@ -17,7 +17,6 @@ const envVarsSchema = joi
   })
   .unknown(true)
   .required();
-
 const result = envVarsSchema.validate({
   ...process.env,
   NATS_SERVERS: process.env.NATS_SERVERS.split(','),
