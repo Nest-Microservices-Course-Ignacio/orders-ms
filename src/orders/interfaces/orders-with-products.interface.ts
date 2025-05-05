@@ -1,3 +1,4 @@
+import { OrderItems as OrderItemsPrisma } from '@prisma/client';
 import { OrderStatus } from '../enum/orderStatus.enum';
 
 export interface OrderWithProducts {
@@ -19,7 +20,7 @@ export interface OrderWithProducts {
   updatedAt: Date;
 }
 
-export interface OrderItems {
+export interface OrderItems extends OrderItemsPrisma {
   id: string;
   productId: number;
   quantity: number;

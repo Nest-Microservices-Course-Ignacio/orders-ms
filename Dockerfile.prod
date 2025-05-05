@@ -10,6 +10,9 @@ RUN npm install
 FROM node:23-alpine3.20 as build
 WORKDIR /usr/src/app
 
+# esto es necesario ya que en tiempo de construccion, se encesita la url de conexion para migrar la base de datos, la cual es la misma conexion que en tiempo de ejecicion
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 # copiar de la imagen deps, los modulos instalados (solo prod) de node
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 
@@ -19,9 +22,10 @@ COPY . .
 # correr test
 # RUN npm run test
 # compilar el proyecto
+RUN npx prisma migrate deploy
+RUN npx prisma generate
 RUN npm run build
 RUN npm ci --force --only-production && npm cache clean --force
-RUN npx prisma generate
 
 
 # STAGE 3 crear imagen final
